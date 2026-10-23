@@ -10,8 +10,24 @@ import android.provider.Settings;
 import android.util.Log;
 import java.util.ArrayDeque;
 
-/** Explicit, bounded maintenance session. No network socket, boot receiver or polling. */
+/**
+ * Explicit, bounded maintenance session. No network socket or polling; a boot receiver
+ * exists (BootReceiver.java) but ships disabled — see its own comment for why that is
+ * opt-in rather than default.
+ *
+ * The correction rate limit and session length were widened from an earlier 5-per-minute
+ * / 6-hour build after field use found a vendor cloud policy (synced independently of any
+ * local Home-open event, observed via a Firestore listener inside the vendor's own app —
+ * see docs/device-findings.th.md) resets adb_enabled more often than that original guard
+ * assumed, tripping its "give up" breaker well before 6 hours. The new numbers are a
+ * judgement call, not a measured ceiling: raise MAX_CORRECTIONS_PER_WINDOW further if you
+ * still see it give up, but a circuit breaker of some kind should stay, so a genuine
+ * runaway loop still backs off instead of fighting forever.
+ */
 public final class AdbSessionService extends Service {
+    private static final int MAX_CORRECTIONS_PER_WINDOW = 60;
+    private static final long CORRECTION_WINDOW_MS = 60_000;
+    private static final long SESSION_LENGTH_MS = 30L * 24 * 60 * 60 * 1000; // 30 days
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final ArrayDeque<Long> corrections = new ArrayDeque<>();
     private ContentObserver observer;
@@ -23,7 +39,7 @@ public final class AdbSessionService extends Service {
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         startForeground(7, new Notification.Builder(this, "adb-session")
             .setSmallIcon(android.R.drawable.stat_sys_warning)
-            .setContentTitle("ADB maintenance session (6 hour limit)")
+            .setContentTitle("ADB maintenance session")
             .setContentText(detail)
             .addAction(new Notification.Action.Builder(null, "Stop session", pending).build())
             .setOngoing(true).build());
@@ -45,12 +61,12 @@ public final class AdbSessionService extends Service {
             Log.w("TvAdbSession", "WRITE_SECURE_SETTINGS not granted; no action");
             stopSelf(); return START_NOT_STICKY;
         }
-        expires = SystemClock.elapsedRealtime() + 6L * 60 * 60 * 1000;
+        expires = SystemClock.elapsedRealtime() + SESSION_LENGTH_MS;
         observer = new ContentObserver(handler) {
             @Override public void onChange(boolean selfChange) { maintain(); }
         };
         getContentResolver().registerContentObserver(Settings.Global.getUriFor("adb_enabled"), false, observer);
-        handler.postDelayed(this::stopSelf, 6L * 60 * 60 * 1000);
+        handler.postDelayed(this::stopSelf, SESSION_LENGTH_MS);
         notification("Active for this maintenance session; corrections: 0");
         maintain();
         return START_NOT_STICKY;
@@ -61,9 +77,9 @@ public final class AdbSessionService extends Service {
         long now = SystemClock.elapsedRealtime();
         if (now >= expires) { stopSelf(); return; }
         if (Settings.Global.getInt(getContentResolver(), "adb_enabled", 0) == 1) return;
-        while (!corrections.isEmpty() && now - corrections.peekFirst() > 60000) corrections.removeFirst();
-        if (corrections.size() >= 5) {
-            Log.w("TvAdbSession", "Repeated policy conflict; stopping instead of looping");
+        while (!corrections.isEmpty() && now - corrections.peekFirst() > CORRECTION_WINDOW_MS) corrections.removeFirst();
+        if (corrections.size() >= MAX_CORRECTIONS_PER_WINDOW) {
+            Log.w("TvAdbSession", "Over " + MAX_CORRECTIONS_PER_WINDOW + " resets in a minute; stopping instead of looping");
             stopSelf(); return;
         }
         corrections.addLast(now);

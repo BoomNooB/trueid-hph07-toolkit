@@ -53,3 +53,31 @@
 Live TV แสดงภาพ Thai PBS เปลี่ยนจริงหลังแก้ Netflix เปิดได้และเคยรายงาน media session เป็น PLAYING ไม่มี error แต่ต่อมาเป็น STOPPED ภาพ capture ดำ เจ้าของไม่มีสมาชิก Netflix จึงเปลี่ยนไปทดสอบ HBO Max ติดตั้งแอปทางการจาก Play Store แล้วเจ้าของยืนยันว่าเล่นเนื้อหาจริงมีภาพและเสียงปกติหลัง reboot ยืนยันเส้นทางเล่นนี้ได้ แต่ไม่ได้ทดสอบทุกบริการ ทุกความละเอียด หรือ HDR ไม่แตะ provisioning, DRM keys, บัญชี หรือ firmware
 
 หลัง reboot ตรวจแล้วว่า launcher ยังติดตั้งอยู่ ค่า block-uninstall ยัง true รายการแอปที่ disable ไม่เปลี่ยน และเจ้าของรายงานว่าเข้า launcher ใหม่ได้อีกครั้ง ตอนจบหยุด maintenance service ยืนยันยกเลิกสิทธิ์ USB debugging ในเมนู Android ปิด debugging และ reboot แล้ว ตรวจพบพอร์ต 5555 ตอบ Connection refused ขณะที่บริการรีโมทกลับมาออนไลน์ พอร์ต screen sharing ปิดด้วย กด Home ผ่านรีโมทที่ pair ไว้แล้วกลับ launcher ใหม่ได้อีกครั้ง ตอนบูตอาจเห็น TrueID ก่อนกด Home รายการคืนค่าอยู่ใน `tools/setup.py restore` ส่วนรายละเอียดใช้งานและข้อจำกัดอยู่ใน `../README.md` ก่อนนำไปเผยแพร่ต้องตัด token, private key, serial, บัญชี, MAC, IP ภายใน และชื่อ Wi-Fi ออกจากหลักฐานทั้งหมด
+
+## Live TV ตรงๆ โดยไม่ผ่านเมนู TrueID — และบั๊ก crash ที่เจอระหว่างทาง
+
+แอป TrueID TV เองมี deep link `truedmpatv://trueidapp/LIVE/<เลขช่อง>` ที่พาเข้า live player ตรงๆ ข้ามหน้า home grid/VOD/cloud gaming/social ทั้งหมด พบค่าคงที่นี้ในซอร์ส (`xy3.n3 = "truedmpatv://trueidapp/LIVE/"` และพี่น้อง `/VOD/`, `/CW/`, `/EPG/`) ตัวแปร `xy3.h3 = "LIVE"` ถูกเช็คใน `r2.h()` (ATVHelper.java)
+
+ลองยิงด้วย URI prefix เฉยๆ (ไม่มีเลขช่อง) พบว่า **แอป crash วนซ้ำจริง**: `IndexOutOfBoundsException` ที่ `android.net.Uri$PathSegments.get(Uri.java:997)` เรียกจาก `r2.h(ATVHelper.java:47)` — โค้ดเช็ค `getPathSegments().get(0).equals("LIVE")` แล้วอ่าน `getPathSegments().get(1)` ต่อทันทีโดยไม่เช็คว่ามี segment ที่สองจริงไหม เป็นบั๊กจริงของแอปเวอร์ชัน `25.02.21.22` ไม่ใช่ที่เครื่องมือนี้ทำ ยืนยันด้วย `logcat -b crash` ซ้ำ 4 ครั้งติดกันจากการยิง URI รูปแบบเดิม แก้โดยใส่เลขช่องเสมอ เช่น `truedmpatv://trueidapp/LIVE/1`
+
+`android/livetv-shortcut/` เป็นแอป trampoline เล็กๆ ที่เปิดแล้วยิง deep link ที่ถูกต้องทันทีแล้ว `finish()` ตัวเอง ใช้แทนตำแหน่ง TrueID บน dock ของ launcher ได้ (ตั้ง `dock_apps`/`hidden_apps`/`live_tv_package` ใน cleanyourtv's `config.json` ให้ชี้มาที่ `local.tv.livetv` แทน `com.truedmp.idtv`) ทดสอบกดจริงจากรีโมทจนเห็นภาพสดเต็มจอแล้ว เลขช่อง (ค่า default ในซอร์สคือ `1`) เป็น index ภายในของแอป ไม่ใช่เลขช่องออกอากาศ และต่างกันไปตาม region/ผู้ให้บริการ ต้องลองเองเพื่อหาเลขที่ตรงกับช่องที่ต้องการ
+
+## TrueID ค้าง RAM เพราะอะไร และทำไม `pm disable` ปิดบางส่วนไม่ได้
+
+วัด `dumpsys meminfo com.truedmp.idtv` ตอน idle พบใช้ ~88MB (Native Heap ~52MB + Dalvik ~31MB + Dalvik Other ~4.5MB) ที่น่าแปลกคือ `killBackgroundProcesses` เรียกแล้วไม่มีผลเลย ตรวจ `dumpsys activity services com.truedmp.idtv` พบสาเหตุ: แอปรัน **สอง foreground service แบบไม่มี notification ให้เห็น** (`channel=NeverDisplayThisNotification`) ค้างตลอดเวลาคือ `com.truedigital.remoteservicelib.core.AppRemoteService` (รับคำสั่งจากแอปมือถือ TrueID ที่ใช้เป็นรีโมท) และ `com.truedmp.idtv.tv_settings.TvSettingsMenuService` — Android ปกป้อง process ที่ถือ foreground service จาก `killBackgroundProcesses` โดยดีไซน์ ไม่ใช่บั๊ก
+
+ลองปิดสอง service นี้แยกด้วย `pm disable <component>` และ `pm disable-user --user 0 <component>` ทั้งคู่ถูก Android เองปฏิเสธ: `SecurityException: Shell cannot change component state for ... to 2/3` — shell ปิดทั้งแอปได้ (ใช้ได้กับ Google Feedback/Bug Report Sender ในหัวข้อก่อนหน้า) แต่ปิด component เดี่ยวของแอปอื่นไม่ได้ เป็นข้อจำกัดของ Android เองที่กันไม่ให้ ADB ไปรื้อบางส่วนของแอปอื่นแบบเจาะจุด
+
+ทางที่ใช้ได้จริงคือ `am force-stop` ซึ่งข้ามการป้องกัน foreground-service ได้ (เป็นคนละ API/เส้นทางจาก `killBackgroundProcesses`) แต่ `force-stop` เป็นสิทธิ์ระดับ shell เท่านั้น แอปทั่วไปเรียกเองไม่ได้ จึงต้องรันจากนอกเครื่อง (`tools/ram_guard.py`, ดูคอมเมนต์ในไฟล์) แทนที่จะพยายามทำทั้งหมดบนตัวทีวีเอง
+
+วัดก่อน/หลัง `force-stop`: `MemFree` จาก 112MB ขึ้นเป็น 352MB, `MemAvailable` จาก 647MB เป็น 887MB — เพิ่มขึ้นจริง ~240MB มากกว่าที่ idtv กินเองเกือบ 3 เท่า เพราะตอนมันทำงานมันดึง cached page อื่นๆ ของระบบติดไปด้วย ตัวเลขจะต่างกันไปตามเครื่องและแอปที่ลงเพิ่ม วัดของตัวเองด้วย `tools/tv.py` ก่อนเชื่อตัวเลขนี้ตรงๆ
+
+## สืบโฆษณา Live TV — ลองผิดสองรอบก่อนเจอของจริง
+
+สมมติฐานแรก (ยังไม่ได้วัด): เดาว่าเป็น server-side ad insertion เย็บเข้ากับสตรีมจากโดเมนเดียวกับ content — **ผิด** ตรวจ decompile ย้อนไปที่ use case จริง (`GetPreRollAdsParamsUseCase`/`j09.java`, `ShouldLoadAdsUseCase`/`bpi.java`, `PrepareAdURLUseCase`/`b1g.java`) พบว่าการตัดสินใจว่าจะมีโฆษณาไหมมาจาก **Firebase Remote Config** (`gr7.o8()` คืน rule ตาม content type + channel id, fallback เป็น wildcard `"*"`) ผสมกับ cache ท้องถิ่นใน **CouchBase Lite** (`gsj`, log บรรทัด `[CouchBaseData]`) ไม่ใช่ network call สดตอนสลับช่องเลย
+
+ลองบล็อก DNS โดเมนที่ดูเกี่ยวกับ ads ของ True เอง (`cms-sccmixer-dmpapi.trueid.net`) ที่ router — **ไม่ได้ผล** โฆษณายังขึ้นเหมือนเดิม เพราะดักผิดจุด (ตัวตัดสินใจไม่ใช่ network call ต่อครั้ง)
+
+ดักจับ DNS จริงของทีวี (MikroTik `/tool sniffer`) ให้ตรงจังหวะที่ผู้ใช้ยืนยันว่าเห็นโฆษณาขึ้นจริง — คราวนี้เจอชุดโดเมนโฆษณาจริง ยิงพร้อมกันเป็นพรวด: `pagead2.googlesyndication.com`, `pubads.g.doubleclick.net`, `bid.g.doubleclick.net`, `securepubads.g.doubleclick.net`, `gcdn.2mdn.net`, `ow.pubmatic.com` (PubMatic SSP), `marker.konograma.com` (ad verification) — เป็น Google IMA SDK ยิง real-time ad auction จริง แยกขาดจากโดเมน `*.trueid.net` (CDN/API) อย่างสิ้นเชิง บล็อกชุดนี้ที่ระดับ DNS (`match-subdomain=yes`) ไม่กระทบ content เพราะคนละโดเมนกับสตรีมจริง — ยังไม่ได้ยืนยันผลจริงจากฝั่งเจ้าของเครื่องว่าโฆษณาหายไปจริงหรือไม่ (ตรวจแค่ query ถูกบล็อกสำเร็จที่ router)
+
+บทเรียน: การดัก DNS แค่ครั้งเดียวโดยไม่ยืนยันว่า "โฆษณาขึ้นจริงไหมตอนนั้น" ให้ false negative ได้ง่าย เพราะกฎมาจาก Remote Config เป็นรายช่อง ไม่ใช่ทุกครั้งที่สลับ
