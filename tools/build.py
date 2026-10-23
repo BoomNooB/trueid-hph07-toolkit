@@ -12,7 +12,7 @@ from common import ROOT, private_state
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('app', choices=['bridge','adb-control','package-guard'])
+    p.add_argument('app', choices=['bridge','adb-control','package-guard','livetv-shortcut'])
     p.add_argument('--host-ip', help='Computer LAN IP; embedded registration destination for Bridge only')
     p.add_argument('--sdk', default=os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT'))
     p.add_argument('--java-home', default=os.environ.get('JAVA_HOME'))

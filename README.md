@@ -1,6 +1,8 @@
 # TrueID HPH07 Toolkit
 
-From a greyed-out debugging switch to an accessible Android TV box: source, reversible tools and a Thai case study for **TrueID Skyworth HPH07, Android 9**.
+From a greyed-out debugging switch to an accessible Android TV box: source, reversible tools and a Thai case study for **TrueID Skyworth HPH07 — known in Thailand as "TrueID TV Gen 1" — Android 9**.
+
+("TrueID TV Gen 1" alone is ambiguous: a different, Amlogic-based box (STI6030 / ATV-AS100) is also sold under that same name. Check the model number HPH07 printed on the box itself before using anything here.)
 
 **[อ่านบทความภาษาไทย →](blog/from-locked-box-to-usable-tv.th.md)** · [Setup](docs/setup.md) · [Restore](docs/restore.md) · [Evidence and limits](docs/validation.md)
 
@@ -17,6 +19,9 @@ This is a device-specific investigation and toolkit, not a universal unlocker. T
 | TrueID deletes third-party HOME apps | Package-manager uninstall block for our launcher only | Original false value is recorded for restore |
 | Native HOME priority still favors TrueID | cleanyourtv's HomeKeyService handles physical Home | Boot can initially show TrueID; press Home |
 | Slow/ad-heavy stock home | Lightweight cleanyourtv launcher | No measured general speedup; in-app Live TV ads can remain |
+| Opening Live TV always shows TrueID's full home grid/menu first | `android/livetv-shortcut/` deep-links straight to the player (`truedmpatv://trueidapp/LIVE/<channel>`) | Channel numbering is TrueID's own index, differs per box; a bare `LIVE/` with no index crashes the app (real bug, see device findings) |
+| TrueID stays resident (~88MB, pinned by two silent foreground services) even when not in use | `tools/ram_guard.py` force-stops it (and any other app you name) whenever it's not foreground | `pm disable` on its individual components is blocked by Android itself, not by TrueID; must run as a continuous outside watcher, not from the TV |
+| Live TV pre-roll ads | Traced to Firebase Remote Config + Google IMA/doubleclick/PubMatic, documented with real DNS capture | No verified non-destructive block yet; the ad-decision domains are separate from content CDN domains but blocking them is untested end-to-end (see device findings) |
 
 ## Repository map
 
@@ -24,7 +29,11 @@ This is a device-specific investigation and toolkit, not a universal unlocker. T
 android/adb-control/    Vendor unlock UI + bounded, user-controlled ADB maintenance
 android/bridge/         Consent-based screen sharing and authenticated read-only diagnostics
 android/package-guard/ One-shot uninstall protection for com.gathin.tvhome only
+android/livetv-shortcut/ Trampoline tile: deep-links straight into TrueID's Live TV, skipping its menu
 tools/                 Portable build, pairing, APK hosting, ADB, backup and restore
+tools/ram_guard.py     Continuous watcher (run it off-TV, e.g. a home server): force-stops named
+                       packages whenever they aren't foreground, for apps that pin themselves with
+                       a silent foreground service and so resist normal background eviction
 launcher/              HPH07 configuration for a pinned upstream launcher
 docs/                  Setup, recovery, validation and device findings
 blog/                  Thai long-form explanation, ready to edit for publication
@@ -67,6 +76,16 @@ python tools/setup.py home
 # Check physical Home, held volume and streaming before disabling anything.
 python tools/setup.py debloat
 python tools/tv.py screenshot .state/after.png
+
+# Optional: a dock/Inputs tile that opens straight into Live TV, skipping TrueID's own
+# menu, and a continuous off-TV watcher that force-stops apps pinned by a silent
+# foreground service (TrueID itself is one) whenever they're not in use.
+python tools/build.py livetv-shortcut
+python tools/tv.py push build/livetv-shortcut/livetv-shortcut.apk /data/local/tmp/livetv.apk
+python tools/tv.py shell 'pm install -r /data/local/tmp/livetv.apk'
+# then point cleanyourtv's config.json dock_apps/live_tv_package at local.tv.livetv
+# instead of com.truedmp.idtv — see docs/device-findings.th.md for the exact keys.
+python tools/ram_guard.py com.truedmp.idtv   # run this continuously somewhere that's on 24/7
 ```
 
 Only two reporting packages are in the debloat command. Core Android, TrueID/Live TV, remote/input, Play Services, keyboard, casting, assistant, updates and streaming apps stay enabled. The original session tested packages-only rollback and reboot persistence. [Validation](docs/validation.md) distinguishes those real-device results from the newly packaged public commands, which were built and tested offline rather than reinstalled on the already-finished TV.
