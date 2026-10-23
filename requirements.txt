@@ -1,0 +1,2 @@
+adb-shell[rsa]>=0.4.4,<0.5
+androidtvremote2>=0.2.2,<0.4

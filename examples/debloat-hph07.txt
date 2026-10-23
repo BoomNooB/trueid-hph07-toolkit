@@ -1,0 +1,6 @@
+# HPH07 / Android9 / P2.2.0_20231207 only.
+# Reporting services; no measured speed gain. Preserve TrueID, DRM and Android core.
+# The setup tool records originals, disables one at a time and verifies the disabled list.
+# See docs/setup.md and docs/restore.md before applying.
+com.google.android.feedback
+com.google.android.tv.bugreportsender

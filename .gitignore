@@ -1,0 +1,15 @@
+.venv/
+.deps/
+.state/
+build/
+dist/
+__pycache__/
+*.pyc
+*.keystore
+*.jks
+*.pem
+*.apk
+*.dex
+*.jar
+.DS_Store
+.env

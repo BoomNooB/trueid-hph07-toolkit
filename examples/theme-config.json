@@ -1,0 +1,7 @@
+{
+  "columns": 4,
+  "dock_apps": ["com.wbd.stream", "com.google.android.youtube.tv", "org.jellyfin.androidtv", "com.truedmp.idtv"],
+  "app_keys": ["KEYCODE_HOME:com.gathin.tvhome"],
+  "background_color": "#000000",
+  "wallpaper": false
+}
