@@ -1,6 +1,8 @@
 # TrueID HPH07 Toolkit
 
-From a greyed-out debugging switch to an accessible Android TV box: source, reversible tools and a Thai case study for **TrueID Skyworth HPH07, Android 9**.
+From a greyed-out debugging switch to an accessible Android TV box: source, reversible tools and a Thai case study for **TrueID Skyworth HPH07 — known in Thailand as "TrueID TV Gen 1" — Android 9**.
+
+("TrueID TV Gen 1" alone is ambiguous: a different, Amlogic-based box (STI6030 / ATV-AS100) is also sold under that same name. Check the model number HPH07 printed on the box itself before using anything here.)
 
 **[อ่านบทความภาษาไทย →](blog/from-locked-box-to-usable-tv.th.md)** · [Setup](docs/setup.md) · [Restore](docs/restore.md) · [Evidence and limits](docs/validation.md)
 
