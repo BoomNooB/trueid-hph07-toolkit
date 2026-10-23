@@ -12,15 +12,17 @@ Ask what is in USB ports and separately whether the network uses USB Ethernet. U
 
 ## 2. Bootstrap before ADB
 
-Build the local helper APKs. Pair the native remote if it helps, and use the known LAN host page plus the TV's browser/Downloader to install. Ask the owner only for physical actions the available channel cannot perform, such as a pairing code or on-screen consent. A download prompt is not an installation result.
+When ADB is unavailable or the owner is tired of photos, read [bootstrap.md](bootstrap.md) first. Pairing provides buttons, not screenshots. Aim for a consented Bridge screenshot before the vendor unlock; if authenticated ADB already works, use its screenshots and continue to the backup phase.
+
+Build the local helper APKs. Pair the native remote, then install Bridge with **Downloader by AFTVnews (`com.esaba.downloader`)** and the known LAN APK URL. If letters fail but digits work, follow the numeric-short-code fallback in bootstrap.md, including its APK-only tunnel and CAPTCHA handoff. Prefer a working LAN/manual keyboard over that fallback. Ask the owner only for physical actions the available channel cannot perform. A download prompt is not an installation result.
 
 If installation is refused across verified methods, record the exact failure and end this branch; don't improvise a firmware flash, factory menu or unverified SD boot. If a TV browser cannot open a downloaded APK, use its download view or Downloader instead of repeating the same click. Never use another person's keys or an opaque “unlock APK”.
 
-**Done:** the locally built HPH07 vendor-unlock entry actually opens on the box, or the concrete bootstrap blocker is documented.
+**Done:** Bridge registered, Android capture consent was granted and the agent fetched **and inspected** a real screenshot, or the concrete bootstrap blocker is documented. Keep any temporary APK endpoint alive until installation is verified, then stop it. Credentials/diagnostics remain LAN-only.
 
 ## 3. Unlock and authenticate
 
-Record the original property before writing. Follow Probe → Unlock → read-back → close temporary vendor API debug session → Android USB debugging toggle. Warn the owner just before the ADB authorization prompt; match the generated key fingerprint. Run `id`.
+Use the newly visible screen and paired remote to install/open the vendor helper. Record the original property before writing. Follow Probe → Unlock → read-back → close temporary vendor API debug session → Android USB debugging toggle. Warn the owner just before the ADB authorization prompt; match the generated key fingerprint. Run `id`.
 
 **Done:** property read-back true, switch usable, and authenticated uid2000 shell evidenced. A port open or a broadcast sent is insufficient. The protected broadcast in the original investigation **failed**; the Binder route was the successful one.
 
@@ -32,7 +34,7 @@ Run the complete backup before package/Home/settings changes. If the owner wants
 
 ## 5. Hand over Home without breaking TrueID
 
-Follow [upstream integration](upstream-integration.md). Confirm installed launcher APK hash, save and set its per-package uninstall block, then merge/enable HomeKeyService. Keep TrueID enabled: its Home activity also plays Live TV. Never claim a native HOME takeover solely from `set-home-activity` printing Success.
+Follow [upstream integration](upstream-integration.md). Confirm installed launcher APK hash, save and set its per-package uninstall block, then merge/enable HomeKeyService. Keep TrueID enabled: its Home activity also plays Live TV. Keep theme `stock_home_redirect` **empty** on this firmware: redirecting `com.truedmp.idtv` also ejects the Live TV player. Never claim a native HOME takeover solely from `set-home-activity` printing Success.
 
 Check physical Home and a held volume key with the owner. Injected Home does not prove the accessibility path. Capture and **view** screenshots after changes; let transitions settle. If capture is black/empty during protected video, check the foreground activity/media session and obtain a real-screen report instead of treating capture failure as breakage.
 

@@ -4,6 +4,8 @@ From a greyed-out debugging switch to an accessible Android TV box: source, reve
 
 **[อ่านบทความภาษาไทย →](blog/from-locked-box-to-usable-tv.th.md)** · [Setup](docs/setup.md) · [Restore](docs/restore.md) · [Evidence and limits](docs/validation.md)
 
+**Using an AI agent?** Start with [the Thai prompt](PROMPT.th.md) and [before-ADB bootstrap](docs/bootstrap.md): pair remote → install Bridge with Downloader by AFTVnews → grant capture consent → inspect the first screenshot → unlock ADB. The article includes the failed browser/text attempts and the short-code/tunnel detour, not just the successful commands.
+
 The owner confirmed physical Home opens the new launcher, held volume still repeats, and HBO Max plays with picture and sound after reboot. Live TV also worked. No root, firmware flashing or DRM provisioning changes were used.
 
 This is a device-specific investigation and toolkit, not a universal unlocker. Tested firmware: `P2.2.0_20231207`, Android security patch December 5, 2023; TrueID app `25.02.21.22`. A similar-looking box can have a different service or policy.

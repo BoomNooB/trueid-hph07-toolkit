@@ -12,6 +12,8 @@ Check what is plugged into USB, **including whether the network itself uses a US
 
 ## 2. Build before ADB exists
 
+For an AI-led setup with minimal repeated photos, follow [bootstrap.md](bootstrap.md) through the first real Bridge screenshot, then return to the vendor-unlock step below. It identifies the exact Downloader app, the numeric-code fallback and which consent/CAPTCHA actions still require the owner.
+
 Follow the prerequisites and build commands in the root README. Android SDK command-line tools, platforms 34/35 and build-tools 34/35 are required. Launcher Gradle may download dependencies and its wrapper distribution; there are no bundled SDK or JDK binaries.
 
 Build `adb-control`, `bridge` and `package-guard`. Bridge's `--host-ip` is the **computer's address**, not the TV address; it is embedded so the app can register its random token with your local host. Rebuild Bridge if that address changes.
@@ -79,6 +81,8 @@ The launcher is fetched at a pinned revision and only its `config.xml` is overla
 The tested built-in dock is Netflix / YouTube / Jellyfin / TrueID. Edit `launcher/hph07-config.xml` to choose 4–7 columns and package order, then rebuild. `examples/theme-config.json` demonstrates HBO Max in the first slot; it is an example, not the configuration installed in the original session. For wallpaper/theme changes use the pinned cleanyourtv theme tools and their documentation; preserve the Home app-key mapping on this board.
 
 Do not disable TrueID's package or whole MainActivity: it also supplies Live TV. Native HOME priority can remain stock even when `set-home-activity` says Success. Check the **physical** Home button, not just an ADB-injected key. Hold volume up to check repeats before and after enabling the helper. If repeats break, disable the helper and choose the tradeoff explicitly. On the tested HPH07, the owner confirmed both Home and volume repeat worked. At boot you may initially see TrueID; Home opens the custom launcher.
+
+Keep `stock_home_redirect` empty in any external theme as well as the built-in config. A later attempt to auto-redirect TrueID after wake caused a real regression: opening Live TV entered the shared MainActivity, then HomeKeyService immediately sent it back to the custom launcher. Clearing only that value restored playback and survived the owner's reboot/sleep tests. See [the regression record](livetv-regression.md).
 
 ## 7. Minimal cleanup and verification
 

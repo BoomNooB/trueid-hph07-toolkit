@@ -40,3 +40,7 @@ Offline tests cover transfer integrity/path handling, preservation of existing a
 - No removal of all TrueID/in-stream ads, or YouTube video ad blocking.
 - No full automatic restore test on the public wrapper; only the original packages-only rollback was run on the device.
 - No prebuilt vendor APKs/firmware or signing keys. APK byte hashes vary across newly generated signing keys; buildable source is the reproducibility target, not identical signing identity.
+
+## Later regression verified on the same device
+
+A later private sleep/power session added a TrueID-wide `stock_home_redirect`, which also redirected Live TV because of the shared MainActivity. Clearing only that theme value restored the same shortcut probe; the owner confirmed picture/audio, physical Home and reopening Live TV, followed by successful reboot and sleep/wake tests. See [livetv-regression.md](livetv-regression.md). This later fix preserved the owner's later always-on ADB/server guard arrangement; the original closure results above describe the earlier handover, not the current private maintenance policy.

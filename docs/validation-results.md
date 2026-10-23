@@ -20,3 +20,9 @@ Performed on macOS arm64 with an isolated JDK 21 and Android platform/build tool
 The loopback smoke test used a synthetic token, not a real TV's credentials. It stopped the server afterwards. No real TV was contacted during these public packaging checks, and the completed original TV's ADB was not reopened. Real-device outcomes and the limits of their evidence are in [validation.md](validation.md).
 
 The new original-property restore button, model gate, visible unlock entry and portable Python setup/restore wrappers were **not run against the original device**. Compile success/offline tests do not substitute for that runtime verification. Newly generated APK signatures differ from the original private session's keys; a clone does not contain an update key for that installation.
+
+## Follow-up export checks
+
+The expanded bootstrap documentation and APK-only `tools/transfer.py` were added after reviewing the original session. All **14** offline tests passed, including three real loopback HTTP tests: exact APK payload/MIME, rejection of private/diagnostic routes, and rejection of registration POSTs. Python compilation passed. No new public tunnel was opened by this check.
+
+Separately, a real-device Live TV regression was reproduced, isolated to the later stock-home redirect theme value, fixed and tested after reboot. The owner independently confirmed reboot and sleep/wake. That evidence is scoped in `livetv-regression.md`; it does not reclassify the portable public APK builds as device-tested.
