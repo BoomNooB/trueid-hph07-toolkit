@@ -17,11 +17,11 @@ import android.content.Intent;
  * "Allow USB debugging?" prompt), but it shouldn't be the default for everyone who clones
  * this repo for their own TV. Turn it on yourself if you want it:
  *
- *     python tools/tv.py 'pm enable local.tv.adbcontrol/.BootReceiver'
+ *     python tools/tv.py shell 'pm enable local.tv.adbcontrol/.BootReceiver'
  *
  * and back off with:
  *
- *     python tools/tv.py 'pm disable local.tv.adbcontrol/.BootReceiver'
+ *     python tools/tv.py shell 'pm disable local.tv.adbcontrol/.BootReceiver'
  */
 public final class BootReceiver extends BroadcastReceiver {
     @Override public void onReceive(Context context, Intent intent) {

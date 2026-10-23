@@ -33,4 +33,4 @@ Back up the current theme and accessibility list before changing anything. Keep 
 
 The public built-in HPH07 config already leaves this value empty. Inspect external `config.json` overlays too: a later theme can override a correct APK default. There is no new claim that native HOME priority or direct-to-launcher boot was solved.
 
-The owner's later private setup also added boot-persistent ADB and a server-side RAM guard. Those later choices are separate from the public toolkit's original bounded six-hour maintenance helper; this fix preserved that private setup rather than replacing its policy. Don't copy a private always-on maintenance arrangement into a generic owner's setup by assumption.
+The owner's later private setup also added boot-persistent ADB and a server-side RAM guard. The original helper used six-hour sessions; the latest merged public 0.8 source has up-to-30-day sessions and a disabled-by-default opt-in BootReceiver. This fix preserved the owner's private policy rather than replacing it. Don't copy a private always-on maintenance arrangement into a generic owner's setup by assumption.

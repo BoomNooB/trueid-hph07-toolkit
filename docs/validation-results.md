@@ -26,3 +26,7 @@ The new original-property restore button, model gate, visible unlock entry and p
 The expanded bootstrap documentation and APK-only `tools/transfer.py` were added after reviewing the original session. All **14** offline tests passed, including three real loopback HTTP tests: exact APK payload/MIME, rejection of private/diagnostic routes, and rejection of registration POSTs. Python compilation passed. No new public tunnel was opened by this check.
 
 Separately, a real-device Live TV regression was reproduced, isolated to the later stock-home redirect theme value, fixed and tested after reboot. The owner independently confirmed reboot and sleep/wake. That evidence is scoped in `livetv-regression.md`; it does not reclassify the portable public APK builds as device-tested.
+
+## Merging the owner's other session
+
+Before pushing the follow-up, remote commits had added the Live TV shortcut, optional RAM watcher, disabled-by-default BootReceiver and a 30-day maintenance window. They were merged rather than overwritten. The visible helper text and commands were reconciled with that source; claims about memory causality and untested ad-blocking effects were qualified. The merged public ADB Control0.8 and Live TV shortcut both built and passed APK signature checks, and all14 offline tests passed. These rebuilt public APKs were not installed over the owner's working TV apps.

@@ -23,9 +23,9 @@ public final class AdbSettingsActivity extends Activity {
         state = new TextView(this); state.setTextSize(22); state.setTextColor(0xffffffff);
         state.setPadding(0,20,0,20); layout.addView(state);
         TextView info = new TextView(this);
-        info.setText("TrueID can switch USB debugging off when Home opens.\nEnable below keeps it available for a 6-hour maintenance session.\nThis is a workaround; it does not remove TrueID's policy.\nDisable stops the helper and closes ADB. No automatic start at boot.");
+        info.setText("TrueID can switch USB debugging off when Home opens.\nEnable below keeps it available for a maintenance session of up to 30 days.\nThis is a workaround; it does not remove TrueID's policy.\nDisable stops the helper and closes ADB. Boot auto-start is disabled unless you explicitly enable it.");
         info.setTextSize(18); info.setTextColor(0xffc1cfdd); layout.addView(info);
-        Button on = new Button(this); on.setText("Enable ADB (6-hour session)");
+        Button on = new Button(this); on.setText("Enable ADB (up to 30 days)");
         on.setOnClickListener(v -> {
             try {
                 requirePermission();

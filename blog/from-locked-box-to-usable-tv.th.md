@@ -129,7 +129,7 @@ flowchart LR
 
 ทางออกที่ใช้งานได้ระหว่างซ่อมบำรุงคือ helper ที่เจ้าของเปิดเอง มีปุ่ม **Enable ADB (6-hour session)** และ **Disable ADB and stop session** ภายในใช้ foreground service กับ ContentObserver คอยรับการเปลี่ยน `adb_enabled` แทนการ polling
 
-ถ้า vendor ปิด ADB ระหว่าง session มันจะเปิดกลับ แต่จำกัดจำนวนการแก้ต่อหนึ่งนาทีเพื่อไม่วนสู้กับระบบไม่สิ้นสุด ไม่มี boot receiver และไม่เปิด maintenance เองเมื่อบูต หมดเวลาหรือกด Stop คือหยุด observer; ถ้าต้องการปิดพอร์ตด้วย ให้ใช้ Disable หรือปิด debugging ใน Settings แล้วตรวจพอร์ต
+ถ้า vendor ปิด ADB ระหว่าง session มันจะเปิดกลับ แต่จำกัดจำนวนการแก้ต่อหนึ่งนาทีเพื่อไม่วนสู้กับระบบไม่สิ้นสุด รุ่นแรกไม่มี boot receiver และไม่เปิด maintenance เองเมื่อบูต หมดเวลาหรือกด Stop คือหยุด observer; ถ้าต้องการปิดพอร์ตด้วย ให้ใช้ Disable หรือปิด debugging ใน Settings แล้วตรวจพอร์ต
 
 **เราไม่ได้ลบนโยบายปิด ADB ถาวร** การเรียกสิ่งนี้ว่า workaround ที่ผู้ใช้ควบคุมได้ตรงกับผลมากกว่า และเป็นข้อจำกัดที่ต้องบอกคนทำตาม
 
@@ -204,7 +204,7 @@ com.google.android.tv.bugreportsender
 
 หลังแก้ เจ้าของลอง Live TV → Home → Live TV ผ่านทั้งสองรอบ เรา reboot ตรวจ config และ probe ซ้ำ แล้วเจ้าของลองทั้ง reboot และ sleep/wake ด้วยตัวเอง ยืนยันว่าใช้งานปกติ มี [บันทึก regression](../docs/livetv-regression.md) แยกให้ agent รุ่นถัดไปเห็นว่าค่านี้ต้องว่างบน firmware นี้ รวมถึงต้องดู external theme ที่อาจทับค่าใน APK
 
-การตั้ง ADB ให้เปิดต่อเนื่องกับ server RAM guard ในรอบหลังเป็นทางเลือกส่วนตัวที่เพิ่มภายหลัง ไม่ใช่ default หกชั่วโมงที่แจกใน repo เราเก็บสถานะล่าสุดแยกจาก baseline เดิม เพื่อไม่ให้ agent มาถึงแล้วรัน restore ของรอบแรกทับงานใหม่โดยไม่รู้ตัว
+การตั้ง ADB ให้เปิดต่อเนื่องกับ server RAM guard เป็นทางเลือกที่เพิ่มภายหลัง รุ่นสาธารณะล่าสุดมี session สูงสุด 30 วันและ BootReceiver แบบ opt-in ที่ปิดไว้โดยค่าเริ่มต้น ต่างจาก helper หกชั่วโมงในรอบแรก เราเก็บสถานะล่าสุดแยกจาก baseline เดิม เพื่อไม่ให้ agent มาถึงแล้วรัน restore ของรอบแรกทับงานใหม่โดยไม่รู้ตัว
 
 ## ถ้าจะให้ AI ทำตาม
 

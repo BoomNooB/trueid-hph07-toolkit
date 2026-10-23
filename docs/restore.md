@@ -29,10 +29,11 @@ Changing the gate property and switching ADB on/off are separate operations. Sto
 
 ## Close maintenance completely
 
-1. In TrueTV ADB Control choose **Disable ADB and stop session**, or stop its session before using Android's USB debugging switch.
-2. In Android Developer options revoke USB debugging authorizations and turn off USB/network debugging. No separate network-debugging toggle was present in the tested UI.
-3. Reboot through Android Settings → Device Preferences → About → Restart. This also ends Bridge screen sharing.
-4. Run `python tools/adb_closed.py` from the computer while the box is otherwise reachable. `CLOSED` means explicit connection refusal. `INCONCLUSIVE` is not a pass.
-5. Stop `host.py` and `remote.py` on the computer. If the box's network uses USB Ethernet, replug the adapter after debugging is off and confirm Ethernet rather than a Wi-Fi fallback.
+1. If you explicitly enabled the optional BootReceiver, disable it while ADB is still available: `python tools/tv.py shell 'pm disable local.tv.adbcontrol/.BootReceiver'`. Verify the command succeeds; otherwise a reboot can reopen maintenance. This manual opt-in is outside the setup ledger.
+2. In TrueTV ADB Control choose **Disable ADB and stop session**, or stop its session before using Android's USB debugging switch.
+3. In Android Developer options revoke USB debugging authorizations and turn off USB/network debugging. No separate network-debugging toggle was present in the tested UI.
+4. Reboot through Android Settings → Device Preferences → About → Restart. This also ends Bridge screen sharing.
+5. Run `python tools/adb_closed.py` from the computer while the box is otherwise reachable. `CLOSED` means explicit connection refusal. `INCONCLUSIVE` is not a pass.
+6. Stop `host.py`, `remote.py` and any optional `ram_guard.py` watcher/service on the computer. If the box's network uses USB Ethernet, replug the adapter after debugging is off and confirm Ethernet rather than a Wi-Fi fallback.
 
 These UI steps were executed in the original session. After reboot the native paired remote reconnected, port 5555 explicitly refused connections, the Bridge port also refused, and Home opened the new launcher again. Re-enabling ADB later requires a fresh authorization because the old authorizations were revoked.

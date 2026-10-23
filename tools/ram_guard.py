@@ -9,19 +9,18 @@ foreground service (no visible notification) specifically so Android's normal ba
 killer leaves them alone. TrueID TV is one: it runs AppRemoteService (phone-as-remote
 pairing) and TvSettingsMenuService continuously, which makes killBackgroundProcesses a
 no-op against it. am force-stop (an ADB shell / "shell" UID operation, not available to a
-normal installed app) overrides that; an ordinary cached app with no such pin would also
-just be left to Android's own eviction, so running this against one costs nothing but
-reclaims its RAM sooner.
+normal installed app) overrides that; an ordinary cached app can instead be left to Android's own eviction. Force-stopping
+background apps can interrupt their work, so this watcher is optional and should be
+measured on the owner's workload rather than treated as free performance.
 
 Usage:
     TV_HOST=192.168.1.50 python tools/ram_guard.py com.truedmp.idtv com.doonung.dtv
 
 Measured on one HPH07 (2GB RAM, idle elsewhere): TrueID TV itself used about 88MB of
 private RAM while backgrounded, but the system's free+available RAM rose by roughly
-240MB after force-stopping it — background services pull in extra cached pages beyond
-their own PSS, so the real-world win is usually bigger than a single app's own footprint
-suggests. Numbers vary by device and what else is installed; measure your own with
-`tools/tv.py 'dumpsys meminfo <package>'` and `tools/tv.py 'cat /proc/meminfo'` before
+240MB after force-stopping it in that snapshot. This alone does not establish the cause of every reclaimed
+page or predict an ongoing UI-speed improvement. Numbers vary by device and what else is installed; measure your own with
+`tools/tv.py shell 'dumpsys meminfo <package>'` and `tools/tv.py shell 'cat /proc/meminfo'` before
 and after.
 
 A systemd unit for running this continuously on a Linux box you already leave on:

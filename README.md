@@ -15,7 +15,7 @@ This is a device-specific investigation and toolkit, not a universal unlocker. T
 | Problem | What worked | Remaining limit |
 |---|---|---|
 | USB debugging switch greyed out | Narrow vendor Binder call sets `persist.truetv.adbcommand=true` | Requires installing our local helper first; other firmware untested |
-| TrueID turns ADB off again | Visible, explicitly started six-hour maintenance observer | Vendor policy remains; stopping/expiry ends the observer, not necessarily the open port |
+| TrueID turns ADB off again | Visible, explicitly started observer (current public build: up to 30 days) | Vendor policy remains; stopping/expiry ends the observer, not necessarily the open port |
 | TrueID deletes third-party HOME apps | Package-manager uninstall block for our launcher only | Original false value is recorded for restore |
 | Native HOME priority still favors TrueID | cleanyourtv's HomeKeyService handles physical Home | Boot can initially show TrueID; press Home |
 | Slow/ad-heavy stock home | Lightweight cleanyourtv launcher | No measured general speedup; in-app Live TV ads can remain |
@@ -40,6 +40,8 @@ blog/                  Thai long-form explanation, ready to edit for publication
 examples/              Non-private configuration examples
 tests/                 Offline safety/restore/transfer checks
 ```
+
+The original helper used six-hour sessions; the merged public 0.8 source uses up to 30 days, with its BootReceiver disabled by default. Boot auto-start is a separate explicit opt-in; see [restore/closure](docs/restore.md) before enabling it.
 
 Runtime data belongs in ignored `.state/`; builds in ignored `build/`; upstream source in ignored `.deps/`. Keep signing keys if you want to update your own installations later. Each fresh clone generates its own keys, so it cannot silently update an APK signed by somebody else's private key.
 
